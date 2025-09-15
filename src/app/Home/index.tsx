@@ -1,10 +1,13 @@
-import { View, Image } from 'react-native';
+import { View, Image, TouchableOpacity, Text } from 'react-native';
 import { Button } from '@/Components/Button';
 
 import { styles } from './styles';
 import { Input } from '@/Components/Input';
 import { Filter } from '@/Components/Filter';
 import { FilterStatus } from '@/types/FilterStatus';
+import { Item } from '@/Components/Item';
+
+const FILTER_STATUS: FilterStatus[] = [FilterStatus.DONE, FilterStatus.PENDING];
 
 export function Home() {
   return (
@@ -17,10 +20,23 @@ export function Home() {
       </View> 
 
       <View style={styles.content}>
-        <Filter status={FilterStatus.DONE} isActive={true}/>
-        <Filter status={FilterStatus.PENDING} isActive={false}/>
+        <View style={styles.header}>
+          {FILTER_STATUS.map((status) => (
+            <Filter key={status} status={status} isActive/>
+          ))}
+          
+          <TouchableOpacity style={styles.clearButton}>
+            <Text style={styles.clearText}>Limpar</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Item 
+          data={{status: FilterStatus.DONE, description: 'Café'}}
+          onRemove={() => console.log('Remover item')}
+          onStatus={() => console.log('Mudar status')}
+        />
+
       </View>
-      
     </View>
   );
 }
