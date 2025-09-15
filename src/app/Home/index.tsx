@@ -3,6 +3,8 @@ import { Button } from '@/Components/Button';
 
 import { styles } from './styles';
 import { Input } from '@/Components/Input';
+import { Filter } from '@/Components/Filter';
+import { FilterStatus } from '@/types/FilterStatus';
 
 export function Home() {
   return (
@@ -15,7 +17,8 @@ export function Home() {
       </View> 
 
       <View style={styles.content}>
-        {/* Lista de itens */}
+        <Filter status={FilterStatus.DONE} isActive={true}/>
+        <Filter status={FilterStatus.PENDING} isActive={false}/>
       </View>
       
     </View>
