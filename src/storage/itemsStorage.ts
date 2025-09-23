@@ -9,6 +9,7 @@ export type ItemStorage = {
     description: string;
 }
 
+//Método para recuperar os itens do AsyncStorage
 async function get(): Promise<ItemStorage[]> {
 
     try {
@@ -20,6 +21,13 @@ async function get(): Promise<ItemStorage[]> {
 
         throw new Error("GET_ITEMS" + error);
     }
+}
+
+//Método para recuperar os itens do AsyncStorage por status
+async function getByStatus(status:FilterStatus): Promise<ItemStorage[]> {
+    
+    const items = await get();
+    return items.filter(item => item.status === status);
 }
 
 export const itemsStorage = {
