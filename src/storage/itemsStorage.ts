@@ -51,9 +51,49 @@ async function add(item: ItemStorage): Promise<ItemStorage[]> {
     return items;
 }
 
+//Método para remover um item do AsyncStorage
+async function remove(id: string): Promise<void> {
+
+    const items = await get();
+    const filteredItems = items.filter(item => item.id !== id);
+    await save(filteredItems);
+}
+
+//Método para limpar todos os itens do AsyncStorage
+async function clear(): Promise<void> {
+    
+    try {
+        await AsyncStorage.removeItem(ITEMS_STORAGE_KEY);
+    }
+    catch (error) {
+        throw new Error("ITEMS_CLEAR: " + error);
+    }
+}
+
+//Método para alternar o status de todos os itens
+async function toggleStatus(id: string): Promise<void> {
+  const items = await get()
+
+  const updatedItems = items.map((item) => 
+    item.id === id
+    ? {
+      ...item,
+      status: item.status === FilterStatus.PENDING
+        ? FilterStatus.DONE
+       : FilterStatus.PENDING,
+    }
+    : item
+  )
+
+  await save(updatedItems)
+}
+
 export const itemsStorage = {
     get,
     getByStatus,
     add,
+    remove,
+    clear,
+    toggleStatus,
 };
 
