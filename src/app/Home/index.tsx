@@ -1,37 +1,73 @@
-import { View, Image, TouchableOpacity, Text, FlatList } from 'react-native';
+import { use, useEffect, useState } from 'react';
+import { View, Image, TouchableOpacity, Text, FlatList, Alert } from 'react-native';
 import { Button } from '@/Components/Button';
-
 import { styles } from './styles';
 import { Input } from '@/Components/Input';
 import { Filter } from '@/Components/Filter';
 import { FilterStatus } from '@/types/FilterStatus';
 import { Item } from '@/Components/Item';
+import { itemsStorage, ItemStorage } from '@/storage/itemsStorage';
 
-const FILTER_STATUS: FilterStatus[] = [FilterStatus.DONE, FilterStatus.PENDING];
-
-const ITEMS = [
-  { id: '1', description: 'Café',     status: FilterStatus.DONE },
-  { id: '2', description: 'Arroz',    status: FilterStatus.PENDING },
-  { id: '3', description: 'Feijão',   status: FilterStatus.PENDING },
-  { id: '4', description: 'Macarrão', status: FilterStatus.DONE },
-  { id: '5', description: 'Leite',    status: FilterStatus.PENDING },
-  { id: '6', description: 'Pão',      status: FilterStatus.DONE },
-];
+const FILTER_STATUS: FilterStatus[] = [FilterStatus.PENDING, FilterStatus.DONE];
 
 export function Home() {
+
+  const [filter, setFilter] = useState(FilterStatus.PENDING);
+  const [description, setDescription] = useState('');
+  const [items, setItems] = useState<ItemStorage[]>([]);
+
+  //Adiciona um novo item na lista
+  async function handleAdd(){
+    if(!description.trim()){
+      Alert.alert('Novo Item', 'Informe a descrição do item.');
+    }
+
+    const newItem = {
+      id: new Date().getTime().toString(),
+      description: description,
+      status: FilterStatus.PENDING
+    }
+
+    await itemsStorage.add(newItem)
+    await itemsByStatus()
+
+    Alert.alert("Adicionado", `Adicionado ${description}`)
+    setFilter(FilterStatus.PENDING)
+    setDescription("")
+  }
+
+  //Recupera os itens do AsyncStorage
+  async function itemsByStatus(){
+    
+    try {
+    
+      const response = await itemsStorage.getByStatus(filter);
+      setItems(response);
+    } 
+    catch (error) {
+      console.log(error);
+      Alert.alert('Listagem', 'Não foi possível carregar os itens.');
+    }
+  }
+
+  //É chamado quando o componente é exibido em tela ou quando alguma variável do array de dependências é alterada
+  useEffect(() => {
+    itemsByStatus();
+  }, [filter]);
+
   return (
     <View style={styles.container}>
       <Image source={require('@/assets/logo.png')} />
 
       <View style={styles.form}>
-        <Input placeholder='O que você precisa comprar?'/>
-        <Button title="Adicionar"/>
+        <Input placeholder='O que você precisa comprar?' onChangeText={setDescription}/>
+        <Button title="Adicionar" onPress={handleAdd}/>
       </View> 
 
       <View style={styles.content}>
         <View style={styles.header}>
           {FILTER_STATUS.map((status) => (
-            <Filter key={status} status={status} isActive/>
+            <Filter key={status} status={status} isActive={filter === status} onPress={() => setFilter(status)}/>
           ))}
           
           <TouchableOpacity style={styles.clearButton}>
@@ -40,7 +76,7 @@ export function Home() {
         </View>
 
         <FlatList
-          data={ITEMS}
+          data={items}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <Item 
